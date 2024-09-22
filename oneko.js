@@ -143,11 +143,6 @@
     if (remainingTimeLeft < progressBarRight && remainingTimeTop < progressBarBottom && progressBarTop - remainingTimeBottom < 32) {
       mousePosX = remainingTimeLeft - 16;
 
-      // Comfy special case
-      if (Spicetify.Config.current_theme === "Comfy") {
-        mousePosY = progressBarTop - 14;
-      }
-
       // Move the cat to the left of elapsed time if it is too close to the remaining time (Nord theme)
       if (remainingTimeLeft - elapsedTimeRight < 32) {
         mousePosX = elapsedTimeLeft - 16;
@@ -157,7 +152,9 @@
 
   function create() {
     variant = parseLocalStorage("variant", "classic");
-    kuroNeko = parseLocalStorage("kuroneko", false);
+    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    kuroNeko = prefersDarkMode ? false : true;
+    localStorage.setItem("oneko:kuroneko", JSON.stringify(kuroNeko));
 
     if (!variants.some((v) => v[0] === variant)) {
       variant = "classic";
@@ -168,13 +165,11 @@
     nekoEl.style.height = "32px";
     nekoEl.style.position = "fixed";
     // nekoEl.style.pointerEvents = "none";
-    nekoEl.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variant}.gif')`;
+    nekoEl.style.backgroundImage = `url('https://i.chenna.me/oneko/oneko-${variant}.gif')`;
     nekoEl.style.imageRendering = "pixelated";
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
     nekoEl.style.filter = kuroNeko ? "invert(100%)" : "none";
-    // Render Oneko below Spicetify's Popup Modal
-    nekoEl.style.zIndex = "99";
 
     document.body.appendChild(nekoEl);
 
@@ -408,7 +403,7 @@
 
     variant = arr[0];
     localStorage.setItem("oneko:variant", `"${variant}"`);
-    nekoEl.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variant}.gif')`;
+    nekoEl.style.backgroundImage = `url('https://i.chenna.me/oneko/oneko-${variant}.gif')`;
   }
 
   // Popup modal to choose variant
@@ -452,7 +447,7 @@
 
       div.className = "oneko-variant-button";
       div.id = variantEnum[0];
-      div.style.backgroundImage = `url('https://raw.githubusercontent.com/kyrie25/spicetify-oneko/main/assets/oneko/oneko-${variantEnum[0]}.gif')`;
+      div.style.backgroundImage = `url('https://i.chenna.me/oneko/oneko-${variantEnum[0]}.gif')`;
       div.style.setProperty("--idle-x", `${idle[0] * 64}px`);
       div.style.setProperty("--idle-y", `${idle[1] * 64}px`);
       div.style.setProperty("--active-x", `${active[0] * 64}px`);
@@ -468,11 +463,6 @@
         div.classList.add("oneko-variant-button-selected");
       }
 
-      Spicetify.Tippy(div, {
-        ...Spicetify.TippyProps,
-        content: variantEnum[1],
-      });
-
       return div;
     }
 
@@ -482,19 +472,6 @@
 
     return container;
   }
-
-  (async () => {
-    while (!Spicetify.Mousetrap) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    Spicetify.Mousetrap.bind("o n e k o", () => {
-      Spicetify.PopupModal.display({
-        title: "Choose your neko",
-        // Render the modal new every time it is opened
-        content: pickerModal(),
-      });
-    });
-  })();
 
   if (parseLocalStorage("forceSleep", false)) {
     while (!document.querySelector(".main-nowPlayingBar-center .playback-progressbar")) {
